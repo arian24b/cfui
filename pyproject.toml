@@ -1,5 +1,5 @@
 [project]
-name = "cfui"
+name = "cfuicli"
 version = "0.2.0"
 description = "cf-style terminal UI and a tiny argparse app framework (help, version, update, prompts for missing options)."
 readme = "README.md"

@@ -21,7 +21,7 @@ wheels = [
 ]
 
 [[package]]
-name = "cfui"
+name = "cfuicli"
 version = "0.2.0"
 source = { editable = "." }
 
