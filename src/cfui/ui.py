@@ -242,11 +242,12 @@ def confirm(label, default=True):
             return False
 
 
-def need(value, flag, label=None, **kw):
+def need(value, flag, label=None, positional=False, **kw):
     """Return `value` if set. Otherwise warn and prompt (TTY), or fail with the standard non-interactive error."""
     if value not in (None, ""):
         return value
     if not interactive():
-        raise Fail(f"{flag} is required. Pass {flag} <value> or run interactively.", code=2)
-    warning(f"{flag} is required")
+        how = f"Pass <{flag}> as an argument" if positional else f"Pass {flag} <value>"
+        raise Fail(f"{'<' + flag + '>' if positional else flag} is required. {how} or run interactively.", code=2)
+    warning(f"{'<' + flag + '>' if positional else flag} is required")
     return ask(label or flag.lstrip("-").replace("-", " ").capitalize(), **kw)

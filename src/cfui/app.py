@@ -43,7 +43,7 @@ class Arg:
         if self.takes_value:
             left += f" <{self.kw.get('metavar') or self.dest.upper()}>"
         elif self.positional:
-            left = f"<{self.flags[0]}>"
+            left = f"<{self.flags[0]}>" if self.required else f"[{self.flags[0]}]"
         right = self.kw.get("help", "")
         if self.required:
             right += " [required]"
@@ -214,7 +214,7 @@ class App(Command):
                 if node.banner:
                     ui.banner(self.name, self.version)
                 flag = a.flags[0] if a.positional else max(a.flags, key=len)
-                v = ui.need(None, flag, a.prompt or a.dest.replace("_", " ").capitalize(),
+                v = ui.need(None, flag, a.prompt or a.dest.replace("_", " ").capitalize(), positional=a.positional,
                             secret=a.secret, choices=a.kw.get("choices"), default=a.kw.get("default"))
                 setattr(ns, a.dest, _convert(a, v, flag))
         if node.banner:
@@ -235,7 +235,7 @@ def _convert(a, v, flag):
 
 
 def _usage(args):
-    return "".join(f" <{a.flags[0]}>" if a.positional else "" for a in args)
+    return "".join((f" <{a.flags[0]}>" if a.required else f" [{a.flags[0]}]") for a in args if a.positional)
 
 
 def _cols(rows, style):
