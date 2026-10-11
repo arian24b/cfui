@@ -84,11 +84,12 @@ class Command:
 
 
 class App(Command):
-    def __init__(self, name, repo, description="", pypi=None, version=None, docs=None, global_args=(), default=None):
+    def __init__(self, name, repo, description="", pypi=None, version=None, docs=None, global_args=(), default=None, upgrade=None):
         super().__init__(name, description)
         self.repo, self.pypi, self.docs = repo, pypi or name, docs or repo
         self.version = version or _installed(self.pypi)
         self.global_args, self.default = list(global_args), default  # default: command used when none is named
+        self.upgrade = upgrade  # optional () -> argv overriding how `update` upgrades (git checkouts, binaries...)
         self.env_quiet = re.sub(r"\W", "_", name).upper() + "_QUIET"
         self._builtins()
 
@@ -118,7 +119,7 @@ class App(Command):
         if latest and latest == self.version:
             ui.success("already up to date")
             return 0
-        cmd = upgrade_command(self.pypi)
+        cmd = self.upgrade() if self.upgrade else upgrade_command(self.pypi)
         ui.hint("running: " + " ".join(cmd))
         return subprocess.call(cmd)
 
