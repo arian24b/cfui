@@ -66,14 +66,14 @@ class Command:
         self.aliases, self.hidden, self.banner = aliases, hidden, banner
         self.commands = {}  # non-empty for a group
 
-    def command(self, name, help="", args=(), aliases=(), hidden=False, banner=False):  # noqa: A002
+    def command(self, name, help="", args=(), aliases=(), hidden=False, banner=False):
         def deco(fn):
             self.commands[name] = Command(name, help, fn, args, aliases, hidden, banner)
             return fn
 
         return deco
 
-    def group(self, name, help="", aliases=()):  # noqa: A002
+    def group(self, name, help="", aliases=()):
         g = self.commands[name] = Command(name, help, aliases=aliases)
         return g
 
@@ -132,8 +132,8 @@ class App(Command):
             node = nxt
             names.append(nxt.name)
         ui.banner(self.name, self.version)
-        H = lambda s: ui.paint("brand", ui.bold(s))  # noqa: E731
-        C = lambda s: ui.paint("info", s)  # noqa: E731
+        H = lambda s: ui.paint("brand", ui.bold(s))
+        C = lambda s: ui.paint("info", s)
         use = " ".join(names)
         leaf = not node.commands
         line = f"{use} <command> [options]" if not leaf else f"{use}{_usage(node.args)} [options]"
@@ -256,7 +256,7 @@ def _installed(pkg):
 
 def latest_version(pkg):
     try:
-        with urllib.request.urlopen(f"https://pypi.org/pypi/{pkg}/json", timeout=5) as r:  # noqa: S310
+        with urllib.request.urlopen(f"https://pypi.org/pypi/{pkg}/json", timeout=5) as r:
             return json.load(r)["info"]["version"]
     except Exception:  # noqa: BLE001
         return None
