@@ -251,3 +251,24 @@ def need(value, flag, label=None, positional=False, **kw):
         raise Fail(f"{'<' + flag + '>' if positional else flag} is required. {how} or run interactively.", code=2)
     warning(f"{'<' + flag + '>' if positional else flag} is required")
     return ask(label or flag.lstrip("-").replace("-", " ").capitalize(), **kw)
+
+
+class progress:
+    """`with ui.progress("Importing", total) as p: p.advance()`: a one-line counter on color-capable TTYs only."""
+
+    def __init__(self, label, total, enabled=True):
+        self.label, self.total, self.n = label, total, 0
+        self.on = enabled and not quiet and color_on(sys.stderr)
+
+    def __enter__(self):
+        return self
+
+    def advance(self, n=1):
+        self.n += n
+        if self.on:
+            sys.stderr.write(f"\r{paint('muted', f'{self.label} {self.n}/{self.total}', sys.stderr)}")
+            sys.stderr.flush()
+
+    def __exit__(self, *exc):
+        if self.on:
+            sys.stderr.write("\r\x1b[2K")
