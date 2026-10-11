@@ -84,11 +84,11 @@ class Command:
 
 
 class App(Command):
-    def __init__(self, name, repo, description="", pypi=None, version=None, docs=None, global_args=()):
+    def __init__(self, name, repo, description="", pypi=None, version=None, docs=None, global_args=(), default=None):
         super().__init__(name, description)
         self.repo, self.pypi, self.docs = repo, pypi or name, docs or repo
         self.version = version or _installed(self.pypi)
-        self.global_args = list(global_args)
+        self.global_args, self.default = list(global_args), default  # default: command used when none is named
         self.env_quiet = re.sub(r"\W", "_", name).upper() + "_QUIET"
         self._builtins()
 
@@ -187,6 +187,8 @@ class App(Command):
         gns, rest = g.parse_known_args(argv)
         ui.quiet = gns.quiet or bool(os.environ.get(self.env_quiet))
         node, names = self, [self.name]
+        if self.default and not gns.help and (rest or not sys.stdin.isatty()) and (not rest or rest[0].startswith("-")):
+            rest = [self.default, *rest]
         while rest and node.commands and not rest[0].startswith("-"):
             nxt = node.find(rest[0])
             if not nxt:

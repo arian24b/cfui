@@ -76,3 +76,10 @@ def test_json_and_no_color(capsys, monkeypatch):
     assert json.loads(capsys.readouterr().out) == {"a": [1, True, None]}
     ui.error_box("bad", "fix it")
     assert capsys.readouterr().err.splitlines()[1:] == ["┌ Error", "│ bad", "│", "│ fix it", "└"]
+
+
+def test_default_command(capsys):
+    a = App("d", repo="r", version="1", default="go")
+    a.command("go", args=[Arg("--x")])(lambda ns: print("went", ns.x))
+    assert a.run(["--x", "1"]) == 0
+    assert "went 1" in capsys.readouterr().out
