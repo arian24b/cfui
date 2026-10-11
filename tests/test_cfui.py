@@ -83,3 +83,14 @@ def test_default_command(capsys):
     a.command("go", args=[Arg("--x")])(lambda ns: print("went", ns.x))
     assert a.run(["--x", "1"]) == 0
     assert "went 1" in capsys.readouterr().out
+
+
+def test_required_list_positional(monkeypatch):
+    got = []
+    a = App("d", repo="r", version="1")
+    a.command("rm", args=[Arg("ids", type=int, nargs="+", required=True, prompt="IDs")])(lambda ns: got.append(ns.ids))
+    assert a.run(["rm", "1", "2"]) == 0
+    monkeypatch.setattr(ui, "interactive", lambda: True)
+    monkeypatch.setattr(ui, "_read", lambda prompt, secret=False: "3, 4")
+    assert a.run(["rm"]) == 0
+    assert got == [[1, 2], [3, 4]]

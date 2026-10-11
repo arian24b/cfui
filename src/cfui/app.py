@@ -25,8 +25,8 @@ class Arg:
     def __init__(self, *flags, required=False, prompt=None, secret=False, **kw):
         self.flags, self.required, self.prompt, self.secret, self.kw = flags, required, prompt, secret, kw
         self.positional = not flags[0].startswith("-")
-        if self.positional and required:
-            kw["nargs"] = "?"  # we enforce it ourselves so we can prompt
+        if self.positional and required:  # we enforce it ourselves so we can prompt
+            kw["nargs"] = "*" if kw.get("nargs") in ("+", "*") else "?"
         elif required:
             kw.pop("required", None)
         self.dest = kw.get("dest") or (flags[0] if self.positional else max(flags, key=len).lstrip("-").replace("-", "_"))
@@ -229,6 +229,8 @@ class App(Command):
 def _convert(a, v, flag):
     t = a.kw.get("type")
     try:
+        if a.kw.get("nargs") in ("+", "*"):  # prompted text becomes a list
+            return [t(x) if t else x for x in v.replace(",", " ").split()]
         return t(v) if t and isinstance(v, str) else v
     except (ValueError, TypeError, argparse.ArgumentTypeError) as e:
         raise ui.Fail(f"Invalid value for {flag}: {v!r} ({e})", code=2) from None
