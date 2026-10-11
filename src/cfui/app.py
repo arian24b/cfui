@@ -24,7 +24,7 @@ class Arg:
 
     def __init__(self, *flags, required=False, prompt=None, secret=False, group=None, **kw):
         self.flags, self.required, self.prompt, self.secret, self.kw = flags, required, prompt, secret, kw
-        self.group = group  # help section title
+        self.group = group or ("Arguments" if flags[0][0] != "-" else None)  # help section title
         self.positional = not flags[0].startswith("-")
         if self.positional and required:  # we enforce it ourselves so we can prompt
             kw["nargs"] = "*" if kw.get("nargs") in ("+", "*") else "?"
@@ -35,6 +35,12 @@ class Arg:
     def add_to(self, parser):
         parser.add_argument(*self.flags, **self.kw)
 
+    def _pname(self):
+        n = self.kw.get("metavar") or self.flags[0]
+        if self.kw.get("nargs") in ("+", "*"):
+            n += "..."
+        return f"<{n}>" if self.required else f"[{n}]"
+
     @property
     def takes_value(self):
         return not self.positional and self.kw.get("action", "store") in _VALUE_ACTIONS
@@ -44,7 +50,7 @@ class Arg:
         if self.takes_value:
             left += f" <{self.kw.get('metavar') or self.dest.upper()}>"
         elif self.positional:
-            left = f"<{self.flags[0]}>" if self.required else f"[{self.flags[0]}]"
+            left = self._pname()
         right = self.kw.get("help", "")
         if self.required:
             right += " [required]"
@@ -248,7 +254,7 @@ def _convert(a, v, flag):
 
 
 def _usage(args):
-    return "".join((f" <{a.flags[0]}>" if a.required else f" [{a.flags[0]}]") for a in args if a.positional)
+    return "".join(" " + a._pname() for a in args if a.positional)
 
 
 def _cols(rows, style):
