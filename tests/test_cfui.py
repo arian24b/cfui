@@ -124,3 +124,10 @@ def test_common_config_group_and_helpers(capsys):
     assert a.run(["config", "reset", "-y"]) == 0 and store == {}
     assert parse_value("a, b") == ["a", "b"] and parse_value("-3") == -3 and parse_value("auto") is None
     assert run_parallel([1, 2, 3], lambda i: 1 / (i - 2), 2) == [2]
+
+
+def test_bundled_skill_installs(tmp_path):
+    from cfui.__main__ import app as cfui_app
+
+    assert cfui_app.run(["skill", "--install", str(tmp_path)]) == 0
+    assert "cfuicli" in (tmp_path / "cf-cli-ui" / "SKILL.md").read_text()

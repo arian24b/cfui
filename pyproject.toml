@@ -8,6 +8,9 @@ authors = [{name = "Arian Omrani", email = "arian24b@gmail.com"}]
 requires-python = ">=3.12"
 dependencies = []
 
+[project.scripts]
+cfui = "cfui.__main__:main"
+
 [project.urls]
 Homepage = "https://github.com/arian24b/cfui"
 
