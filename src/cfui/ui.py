@@ -85,6 +85,17 @@ def info(msg):
         _err("info", "info", msg)
 
 
+def error(msg):
+    """One-line error marker (stderr). Use Fail / error_box for fatal errors."""
+    _err("error", "err", msg)
+
+
+def heading(msg):
+    """Section heading (stderr): brand + bold."""
+    if not quiet:
+        print(paint("brand", bold(msg, sys.stderr), sys.stderr), file=sys.stderr)
+
+
 def hint(msg):
     if not quiet:
         print(paint("muted", f"{sym('arrow')} {msg}", sys.stderr), file=sys.stderr)
