@@ -1,5 +1,7 @@
 # cfui
 
+Install: `pip install cfuicli` (import name: `cfui`).
+
 Stdlib-only terminal UI and tiny argparse framework in the style of Cloudflare's `cf` CLI.
 
 ```python
