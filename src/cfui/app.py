@@ -68,9 +68,9 @@ class Command:
         self.aliases, self.hidden, self.banner = aliases, hidden, banner
         self.commands = {}  # non-empty for a group
 
-    def command(self, name, help="", args=(), aliases=(), hidden=False, banner=False):
+    def command(self, name, help="", args=(), aliases=(), hidden=False, banner=False, raw=False, help_args=None):
         def deco(fn):
-            self.commands[name] = Command(name, help, fn, args, aliases, hidden, banner)
+            self.commands[name] = Command(name, help, fn, args, aliases, hidden, banner, raw, help_args)
             return fn
 
         return deco
