@@ -1,0 +1,25 @@
+name: Release
+on:
+  workflow_run: {workflows: [CI], branches: [main], types: [completed]}
+  workflow_dispatch:
+permissions: {contents: write, issues: write, pull-requests: write, id-token: write}
+jobs:
+  release:
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    environment: pypi   # configure the Trusted Publisher on pypi.org with this environment name
+    steps:
+      - uses: actions/checkout@v6
+        with: {fetch-depth: 0, ref: "${{ github.event.workflow_run.head_branch || github.ref }}"}
+      - uses: astral-sh/setup-uv@v7
+      - run: |
+          git config user.name "${{ github.actor }}"
+          git config user.email "${{ github.actor }}@users.noreply.github.com"
+      - id: sr
+        env: {GH_TOKEN: "${{ secrets.GITHUB_TOKEN }}"}
+        run: |
+          uvx --from python-semantic-release semantic-release version --changelog --tag --push
+          # a new tag points at HEAD only when a release was made
+          git describe --exact-match --tags HEAD >/dev/null 2>&1 && echo "released=true" >> "$GITHUB_OUTPUT" || true
+      - if: steps.sr.outputs.released == 'true'
+        run: uv build && uv publish --trusted-publishing always

@@ -100,9 +100,27 @@ def test_raw_and_grouped_help(capsys):
     a = App("d", repo="r", version="1")
     seen = []
     a.command("wp", "passthrough", raw=True)(lambda ns: seen.append(ns.args))
-    a.command("go", args=[Arg("--x", group="Special"), Arg("--y")], help_args=[Arg("--x", group="Special")])(lambda ns: None)
+    a.command("go", args=[Arg("--x", group="Special"), Arg("--y")], help_args=[Arg("--x", group="Special")])(
+        lambda ns: None
+    )
     assert a.run(["wp", "-q", "--help", "x"]) == 0
     assert seen == [["-q", "--help", "x"]]
     assert a.run(["go", "-h"]) == 0
     out = capsys.readouterr().out
     assert "Special" in out and "--y" not in out
+
+
+def test_common_config_group_and_helpers(capsys):
+    from cfui import add_config, parse_value, run_parallel
+
+    store = {"debug": False, "n": 1}
+    a = App("d", repo="r", version="1")
+    add_config(
+        a, items=lambda: store, get=store.__getitem__, set=store.__setitem__, reset=store.clear, path=lambda: "/x.json"
+    )
+    assert a.run(["config", "set", "n", "5"]) == 0 and store["n"] == 5
+    assert a.run(["config", "get", "debug"]) == 0
+    assert a.run(["config", "reset"]) == 2  # off a TTY needs --yes
+    assert a.run(["config", "reset", "-y"]) == 0 and store == {}
+    assert parse_value("a, b") == ["a", "b"] and parse_value("-3") == -3 and parse_value("auto") is None
+    assert run_parallel([1, 2, 3], lambda i: 1 / (i - 2), 2) == [2]

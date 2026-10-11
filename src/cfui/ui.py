@@ -9,8 +9,13 @@ import sys
 import textwrap
 
 PALETTE = {
-    "brand": "#BF6600", "success": "#3A8E52", "error": "#D45350", "warning": "#BF6600",
-    "info": "#3D82BB", "muted": "#7F7F7F", "boolean": "#926CC1",
+    "brand": "#BF6600",
+    "success": "#3A8E52",
+    "error": "#D45350",
+    "warning": "#BF6600",
+    "info": "#3D82BB",
+    "muted": "#7F7F7F",
+    "boolean": "#926CC1",
 }
 _BASIC = {"brand": 33, "success": 32, "error": 31, "warning": 33, "info": 34, "muted": 90, "boolean": 35}
 _ANSI = re.compile(r"\x1b\[[0-9;]*m")
@@ -30,7 +35,9 @@ class Cancel(Exception):
 
 
 def color_on(stream=None):
-    return bool((stream or sys.stdout).isatty()) and "NO_COLOR" not in os.environ and os.environ.get("FORCE_COLOR") != "0"
+    return (
+        bool((stream or sys.stdout).isatty()) and "NO_COLOR" not in os.environ and os.environ.get("FORCE_COLOR") != "0"
+    )
 
 
 def paint(role, text, stream=None):
@@ -138,7 +145,7 @@ def _json_color(o, ind=0):
     if isinstance(o, dict):
         if not o:
             return "{}"
-        items = [f'{pad}  {paint("info", json.dumps(str(k)))}: {_json_color(v, ind + 1)}' for k, v in o.items()]
+        items = [f"{pad}  {paint('info', json.dumps(str(k)))}: {_json_color(v, ind + 1)}" for k, v in o.items()]
         return "{\n" + ",\n".join(items) + f"\n{pad}}}"
     if isinstance(o, list):
         if not o:
@@ -233,7 +240,11 @@ def ask(label, default=None, secret=False, choices=None):
 def confirm(label, default=True):
     e = sys.stderr
     while True:
-        raw = _read(f"{paint('info', '?', e)} {_label(label)} {paint('muted', '(Y/n)' if default else '(y/N)', e)} ").strip().lower()
+        raw = (
+            _read(f"{paint('info', '?', e)} {_label(label)} {paint('muted', '(Y/n)' if default else '(y/N)', e)} ")
+            .strip()
+            .lower()
+        )
         if not raw:
             return default
         if raw in ("y", "yes"):

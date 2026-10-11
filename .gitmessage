@@ -1,0 +1,7 @@
+# <type>(<scope>): <subject>
+#
+# <body>
+#
+# types: feat fix docs style refactor perf test build ci chore revert
+# subject: imperative, lowercase, no trailing dot
+# footer: BREAKING CHANGE: ... / Closes #123

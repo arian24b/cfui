@@ -1,6 +1,6 @@
 [project]
 name = "cfui"
-version = "0.1.0"
+version = "0.2.0"
 description = "cf-style terminal UI and a tiny argparse app framework (help, version, update, prompts for missing options)."
 readme = "README.md"
 license = "MIT"
@@ -12,7 +12,7 @@ dependencies = []
 Homepage = "https://github.com/arian24b/cfui"
 
 [dependency-groups]
-dev = ["pytest>=8", "ruff>=0.8"]
+dev = ["pytest>=8", "ruff>=0.8", "python-semantic-release>=9"]
 
 [build-system]
 requires = ["hatchling"]
@@ -27,3 +27,17 @@ target-version = "py310"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
+[tool.ruff.lint]
+select = ["E", "W", "F", "I", "N", "UP", "S", "B", "A", "C4", "SIM", "RUF"]
+ignore = ["S101", "S110", "S603", "A002", "A001", "E731", "RUF012", "RUF001", "N818", "N806", "N801", "SIM105"]
+
+[tool.semantic_release]
+version_toml = ["pyproject.toml:project.version"]
+
+[tool.semantic_release.branches.main]
+match = "main"
+
+[tool.semantic_release.changelog.default_templates]
+changelog_file = "CHANGELOG.md"
+output_format = "md"

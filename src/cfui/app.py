@@ -30,7 +30,9 @@ class Arg:
             kw["nargs"] = "*" if kw.get("nargs") in ("+", "*") else "?"
         elif required:
             kw.pop("required", None)
-        self.dest = kw.get("dest") or (flags[0] if self.positional else max(flags, key=len).lstrip("-").replace("-", "_"))
+        self.dest = kw.get("dest") or (
+            flags[0] if self.positional else max(flags, key=len).lstrip("-").replace("-", "_")
+        )
 
     def add_to(self, parser):
         parser.add_argument(*self.flags, **self.kw)
@@ -68,9 +70,14 @@ class _Parser(argparse.ArgumentParser):
 
 
 class Command:
-    def __init__(self, name, help_="", fn=None, args=(), aliases=(), hidden=False, banner=False, raw=False, help_args=None):
+    def __init__(
+        self, name, help_="", fn=None, args=(), aliases=(), hidden=False, banner=False, raw=False, help_args=None
+    ):
         self.name, self.help, self.fn, self.args = name, help_, fn, list(args)
-        self.raw, self.help_args = raw, help_args  # raw: gets the untouched argv tail as `.args`; help_args: subset shown in --help
+        self.raw, self.help_args = (
+            raw,
+            help_args,
+        )  # raw: gets the untouched argv tail as `.args`; help_args: subset shown in --help
         self.aliases, self.hidden, self.banner = aliases, hidden, banner
         self.commands = {}  # non-empty for a group
 
@@ -92,7 +99,9 @@ class Command:
 
 
 class App(Command):
-    def __init__(self, name, repo, description="", pypi=None, version=None, docs=None, global_args=(), default=None, upgrade=None):
+    def __init__(
+        self, name, repo, description="", pypi=None, version=None, docs=None, global_args=(), default=None, upgrade=None
+    ):
         super().__init__(name, description)
         self.repo, self.pypi, self.docs = repo, pypi or name, docs or repo
         self.version = version or _installed(self.pypi)
@@ -111,8 +120,12 @@ class App(Command):
         def _version(a):
             ui.out(self.version_text())
 
-        @self.command("update", "Update to the latest version", banner=True,
-                      args=[Arg("--check", action="store_true", help="Only compare versions")])
+        @self.command(
+            "update",
+            "Update to the latest version",
+            banner=True,
+            args=[Arg("--check", action="store_true", help="Only compare versions")],
+        )
         def _update(a):
             return self.update(a.check)
 
@@ -137,7 +150,9 @@ class App(Command):
         for p in path:
             nxt = node.find(p)
             if not nxt:
-                raise ui.Fail(f"Unknown command: {' '.join([*names[1:], p])}", f"Run `{self.name} help` to list commands.", 2)
+                raise ui.Fail(
+                    f"Unknown command: {' '.join([*names[1:], p])}", f"Run `{self.name} help` to list commands.", 2
+                )
             node = nxt
             names.append(nxt.name)
         ui.banner(self.name, self.version)
@@ -151,7 +166,9 @@ class App(Command):
             lines += [node.help, ""]
         if node.commands:
             lines.append(H("Commands"))
-            cmds = sorted((c for c in node.commands.values() if not c.hidden), key=lambda c: c.name in _BUILTIN and node is self)
+            cmds = sorted(
+                (c for c in node.commands.values() if not c.hidden), key=lambda c: c.name in _BUILTIN and node is self
+            )
             rows = [(f"{use} {c.name}", c.help) for c in cmds]
             lines += _cols(rows, C)
             lines.append("")
@@ -163,9 +180,14 @@ class App(Command):
             for title, rows in sections.items():
                 lines += [H(title), *_cols(rows, C), ""]
         lines.append(H("Global flags"))
-        lines += _cols([("-q, --quiet", "Suppress non-essential output [boolean] [default: false]"),
-                        ("-h, --help", "Show help [boolean]")]
-                       + ([("-v, --version", "Show version [boolean]")] if node is self else []), C)
+        lines += _cols(
+            [
+                ("-q, --quiet", "Suppress non-essential output [boolean] [default: false]"),
+                ("-h, --help", "Show help [boolean]"),
+            ]
+            + ([("-v, --version", "Show version [boolean]")] if node is self else []),
+            C,
+        )
         lines += ["", ui.paint("muted", f"For more information, visit {self.docs}")]
         ui.out("\n".join(lines))
 
@@ -231,8 +253,15 @@ class App(Command):
                 if node.banner:
                     ui.banner(self.name, self.version)
                 flag = a.flags[0] if a.positional else max(a.flags, key=len)
-                v = ui.need(None, flag, a.prompt or a.dest.replace("_", " ").capitalize(), positional=a.positional,
-                            secret=a.secret, choices=a.kw.get("choices"), default=a.kw.get("default"))
+                v = ui.need(
+                    None,
+                    flag,
+                    a.prompt or a.dest.replace("_", " ").capitalize(),
+                    positional=a.positional,
+                    secret=a.secret,
+                    choices=a.kw.get("choices"),
+                    default=a.kw.get("default"),
+                )
                 setattr(ns, a.dest, _convert(a, v, flag))
         if node.banner:
             ui.banner(self.name, self.version)
@@ -279,7 +308,7 @@ def latest_version(pkg):
     try:
         with urllib.request.urlopen(f"https://pypi.org/pypi/{pkg}/json", timeout=5) as r:
             return json.load(r)["info"]["version"]
-    except Exception:  # noqa: BLE001
+    except Exception:
         return None
 
 
