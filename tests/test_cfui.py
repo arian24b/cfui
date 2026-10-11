@@ -94,3 +94,15 @@ def test_required_list_positional(monkeypatch):
     monkeypatch.setattr(ui, "_read", lambda prompt, secret=False: "3, 4")
     assert a.run(["rm"]) == 0
     assert got == [[1, 2], [3, 4]]
+
+
+def test_raw_and_grouped_help(capsys):
+    a = App("d", repo="r", version="1")
+    seen = []
+    a.command("wp", "passthrough", raw=True)(lambda ns: seen.append(ns.args))
+    a.command("go", args=[Arg("--x", group="Special"), Arg("--y")], help_args=[Arg("--x", group="Special")])(lambda ns: None)
+    assert a.run(["wp", "-q", "--help", "x"]) == 0
+    assert seen == [["-q", "--help", "x"]]
+    assert a.run(["go", "-h"]) == 0
+    out = capsys.readouterr().out
+    assert "Special" in out and "--y" not in out

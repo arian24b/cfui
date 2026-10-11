@@ -22,8 +22,9 @@ _BUILTIN = ("help", "version", "update")
 class Arg:
     """An argparse argument. `required=True` means: prompt for it on a TTY, fail with a clear error otherwise."""
 
-    def __init__(self, *flags, required=False, prompt=None, secret=False, **kw):
+    def __init__(self, *flags, required=False, prompt=None, secret=False, group=None, **kw):
         self.flags, self.required, self.prompt, self.secret, self.kw = flags, required, prompt, secret, kw
+        self.group = group  # help section title
         self.positional = not flags[0].startswith("-")
         if self.positional and required:  # we enforce it ourselves so we can prompt
             kw["nargs"] = "*" if kw.get("nargs") in ("+", "*") else "?"
@@ -61,8 +62,9 @@ class _Parser(argparse.ArgumentParser):
 
 
 class Command:
-    def __init__(self, name, help_="", fn=None, args=(), aliases=(), hidden=False, banner=False):
+    def __init__(self, name, help_="", fn=None, args=(), aliases=(), hidden=False, banner=False, raw=False, help_args=None):
         self.name, self.help, self.fn, self.args = name, help_, fn, list(args)
+        self.raw, self.help_args = raw, help_args  # raw: gets the untouched argv tail as `.args`; help_args: subset shown in --help
         self.aliases, self.hidden, self.banner = aliases, hidden, banner
         self.commands = {}  # non-empty for a group
 
@@ -147,10 +149,13 @@ class App(Command):
             rows = [(f"{use} {c.name}", c.help) for c in cmds]
             lines += _cols(rows, C)
             lines.append("")
-        if node.args and leaf or isinstance(node, App) and self.global_args:
-            lines.append(H("Options"))
-            lines += _cols([a.row() for a in (node.args if leaf else self.global_args)], C)
-            lines.append("")
+        shown = (node.args if node.help_args is None else node.help_args) if leaf else self.global_args
+        if shown and (leaf or node is self):
+            sections: dict[str, list] = {}
+            for a in shown:
+                sections.setdefault(a.group or "Options", []).append(a.row())
+            for title, rows in sections.items():
+                lines += [H(title), *_cols(rows, C), ""]
         lines.append(H("Global flags"))
         lines += _cols([("-q, --quiet", "Suppress non-essential output [boolean] [default: false]"),
                         ("-h, --help", "Show help [boolean]")]
@@ -180,6 +185,11 @@ class App(Command):
         if argv[:1] in (["-v"], ["--version"]):
             ui.out(self.version_text())
             return 0
+        raw = self.find(argv[0]) if argv else None
+        if raw is not None and raw.raw:  # passthrough commands see the rest of argv untouched
+            ui.quiet = bool(os.environ.get(self.env_quiet))
+            r = raw.fn(argparse.Namespace(args=argv[1:]))
+            return asyncio.run(r) if inspect.iscoroutine(r) else r
         g = _Parser(add_help=False, allow_abbrev=False, prog=self.name)
         g.add_argument("-q", "--quiet", action="store_true")
         g.add_argument("-h", "--help", action="store_true")
