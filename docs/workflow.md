@@ -1,5 +1,7 @@
 # Workflow
 
+[فارسی](workflow.fa.md)
+
 Distilled from the conventions already used across my repos (tgnews, linkcovery, ollamatools, ...).
 
 ## Tooling

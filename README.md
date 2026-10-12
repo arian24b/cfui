@@ -7,7 +7,18 @@ A small, dependency-free toolkit for Python command-line tools. It gives every t
 - PyPI package: `cfuicli`. Import name: `cfui`.
 - Python 3.12 to 3.15, standard library only.
 
+## Features
+
+- cf-style help, version, update and error output for every command.
+- Missing required options are prompted on a terminal and rejected with exit code 2 in pipes and CI.
+- Colors follow `NO_COLOR` and `FORCE_COLOR`, and fall back to 256 or 16 colors when needed.
+- No runtime dependencies. Built on `argparse`.
+- A bundled agent skill (`cf-cli-ui`) for building CLIs in this style.
+
 ## Install
+
+Requires Python 3.12, 3.13, 3.14 or 3.15.
+
 
 ```bash
 uv add cfuicli          # in a project
@@ -38,6 +49,10 @@ $ tool greet </dev/null           # in a pipe or CI: --name is required. Pass --
 $ tool help greet
 $ tool version
 ```
+
+## How it works
+
+`App` is a thin layer over `argparse`. Each command gets its own parser, and `Arg` wraps `add_argument` with a few extra keywords. After parsing, any `required=True` option that has no value is asked for through `ui.ask` when stdin and stderr are terminals and `CI` is unset; otherwise it is reported as an error. Help and error text are drawn by `cfui.ui` and written to stderr, so stdout stays free for results. `update` reads the latest version from `https://pypi.org/pypi/<package>/json` and upgrades with `uv tool upgrade`, `pipx upgrade` or `pip install -U`, depending on where the interpreter lives.
 
 ## What every tool gets
 
@@ -100,6 +115,13 @@ cfui skill --install       # copy it to ~/.agents/skills/cf-cli-ui
 
 [aitc](https://github.com/arian24b/aitc), [thronetools](https://github.com/arian24b/thronetools), [ollama-tool-cli](https://github.com/arian24b/ollamatools), [pem](https://github.com/arian24b/pem), [linkcovery](https://github.com/arian24b/linkcovery), [pulsecheck](https://github.com/arian24b/pulsecheck), [wpguard](https://github.com/arian24b/wpguard). [dokploytools](https://github.com/arian24b/dokploytools) is written in Go and follows the same conventions with its own code.
 
+## Troubleshooting
+
+- `--name is required. Pass --name <value> or run interactively.` in a script: the prompt only appears on a terminal. Pass the option explicitly.
+- `tool version` prints `tool unknown`: the package named by `pypi=` is not installed, so its version cannot be read. Pass `version=` to `App` or install the package.
+- No colors: output is not a TTY, `NO_COLOR` is set, or `FORCE_COLOR=0`.
+- `update --check` prints `latest: unknown (offline or not published)`: PyPI did not answer within 5 seconds, or the package is not published.
+
 ## Development
 
 ```bash
@@ -107,6 +129,8 @@ uv sync
 uv run pytest
 uv run ruff check . && uv run ruff format --check .
 ```
+
+The conventions behind this repo are in [docs/workflow.md](docs/workflow.md) ([فارسی](docs/workflow.fa.md)).
 
 Commits follow Conventional Commits. A `feat:` or `fix:` merged into `main` runs the Release workflow, which bumps the version, tags it, and publishes to PyPI through a trusted publisher.
 

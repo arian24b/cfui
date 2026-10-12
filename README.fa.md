@@ -7,7 +7,18 @@
 - نام بسته در PyPI: `cfuicli`. نام برای import: `cfui`.
 - پایتون ۳٫۱۲ تا ۳٫۱۵، فقط کتابخانهٔ استاندارد.
 
+## ویژگی‌ها
+
+- راهنما، نسخه، به‌روزرسانی و خطا برای همهٔ دستورها با ظاهر cf.
+- گزینهٔ اجباریِ جاافتاده در ترمینال پرسیده می‌شود و در pipe و CI با کد خروج ۲ خطا می‌دهد.
+- رنگ‌ها از `NO_COLOR` و `FORCE_COLOR` پیروی می‌کنند و در صورت نیاز به ۲۵۶ یا ۱۶ رنگ کاهش می‌یابند.
+- بدون وابستگی زمان اجرا؛ روی `argparse` ساخته شده است.
+- مهارت `cf-cli-ui` برای ساختن CLI به همین سبک همراه بسته است.
+
 ## نصب
+
+به پایتون ۳٫۱۲، ۳٫۱۳، ۳٫۱۴ یا ۳٫۱۵ نیاز دارد.
+
 
 ```bash
 uv add cfuicli          # داخل یک پروژه
@@ -38,6 +49,10 @@ $ tool greet </dev/null           # در pipe یا CI: --name is required. Pass 
 $ tool help greet
 $ tool version
 ```
+
+## نحوهٔ کار
+
+`App` لایه‌ای نازک روی `argparse` است. هر دستور parser خودش را دارد و `Arg` همان `add_argument` را با چند پارامتر اضافه می‌پوشاند. بعد از تجزیهٔ آرگومان‌ها، اگر گزینهٔ `required=True` مقداری نداشته باشد و stdin و stderr ترمینال باشند و متغیر `CI` تنظیم نشده باشد، با `ui.ask` از کاربر پرسیده می‌شود؛ در غیر این صورت خطا می‌دهد. راهنما و خطاها را `cfui.ui` روی stderr می‌کشد تا stdout برای نتیجه آزاد بماند. دستور `update` آخرین نسخه را از `https://pypi.org/pypi/<package>/json` می‌خواند و بسته به محل مفسر پایتون با `uv tool upgrade`، `pipx upgrade` یا `pip install -U` ارتقا می‌دهد.
 
 ## چیزهایی که هر ابزار خودکار دریافت می‌کند
 
@@ -100,6 +115,13 @@ cfui skill --install       # در ~/.agents/skills/cf-cli-ui کپی می‌کن�
 
 [aitc](https://github.com/arian24b/aitc)، [thronetools](https://github.com/arian24b/thronetools)، [ollama-tool-cli](https://github.com/arian24b/ollamatools)، [pem](https://github.com/arian24b/pem)، [linkcovery](https://github.com/arian24b/linkcovery)، [pulsecheck](https://github.com/arian24b/pulsecheck)، [wpguard](https://github.com/arian24b/wpguard). [dokploytools](https://github.com/arian24b/dokploytools) با Go نوشته شده و همین قراردادها را با کد خودش رعایت می‌کند.
 
+## رفع اشکال
+
+- پیام `--name is required. Pass --name <value> or run interactively.` در اسکریپت: پرسش فقط در ترمینال نمایش داده می‌شود. گزینه را صریح بدهید.
+- `tool version` عبارت `tool unknown` را چاپ می‌کند: بسته‌ای که با `pypi=` معرفی شده نصب نیست و نسخه‌اش خوانده نمی‌شود. به `App` پارامتر `version=` بدهید یا بسته را نصب کنید.
+- رنگ نمی‌بینید: خروجی TTY نیست، `NO_COLOR` تنظیم شده یا `FORCE_COLOR=0` است.
+- `update --check` عبارت `latest: unknown (offline or not published)` را چاپ می‌کند: PyPI تا ۵ ثانیه جواب نداده یا بسته منتشر نشده است.
+
 ## توسعه
 
 ```bash
@@ -107,6 +129,8 @@ uv sync
 uv run pytest
 uv run ruff check . && uv run ruff format --check .
 ```
+
+قراردادهای این مخزن در [docs/workflow.fa.md](docs/workflow.fa.md) آمده است ([English](docs/workflow.md)).
 
 پیام کامیت‌ها از Conventional Commits پیروی می‌کنند. وقتی `feat:` یا `fix:` در `main` ادغام شود، workflow مربوط به Release نسخه را بالا می‌برد، تگ می‌زند و از طریق trusted publisher در PyPI منتشر می‌کند.
 
