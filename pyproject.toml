@@ -5,8 +5,11 @@ description = "cf-style terminal UI and a tiny argparse app framework (help, ver
 readme = "README.md"
 license = "MIT"
 authors = [{name = "Arian Omrani", email = "arian24b@gmail.com"}]
-requires-python = ">=3.10"
+requires-python = ">=3.12"
 dependencies = []
+
+[project.scripts]
+cfui = "cfui.__main__:main"
 
 [project.urls]
 Homepage = "https://github.com/arian24b/cfui"
@@ -23,7 +26,7 @@ packages = ["src/cfui"]
 
 [tool.ruff]
 line-length = 120
-target-version = "py310"
+target-version = "py312"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
