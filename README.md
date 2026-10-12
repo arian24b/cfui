@@ -60,11 +60,14 @@ Behavior you do not have to write:
 ```python
 app = App("tool", repo=..., pypi=..., description=..., default="count", global_args=[Arg("-c", "--config")])
 
-grp = app.group("config", "Manage settings")          # tool config show
+grp = app.group("config", "Manage settings")  # tool config show
+
+
 @grp.command("show", "Show settings")
 def show(a): ...
 
-@app.command("wp", "Pass everything through", raw=True)   # a.args is the untouched argv tail
+
+@app.command("wp", "Pass everything through", raw=True)  # a.args is the untouched argv tail
 def wp(a): ...
 ```
 
